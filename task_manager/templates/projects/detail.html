@@ -8,6 +8,22 @@
     <div class="card-body">
         <p>{{ project.description }}</p>
 
+        <!-- Поиск по задачам -->
+        <form method="get" action="" class="mb-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="search" class="col-form-label">Search:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" name="search" id="search" class="form-control" placeholder="Search tasks..." value="{{ search_query }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <a href="{% url 'project_detail' project.id %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </div>
+        </form>
+
         <!-- Фильтры по статусу -->
         <h2>Tasks</h2>
         <div class="mb-3">
@@ -17,18 +33,77 @@
             <a href="?status=done" class="btn btn-outline-secondary">Done</a>
         </div>
 
+        <!-- Фильтрация по due_date -->
+        <form method="get" action="" class="mb-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="due_date_before" class="col-form-label">Due Date before:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="date" name="due_date_before" id="due_date_before" class="form-control" value="{{ due_date_before }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                    <a href="{% url 'project_detail' project.id %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Сортировка -->
+        <div class="mb-3">
+            <label for="ordering" class="form-label">Sort by:</label>
+            <select id="ordering" class="form-select" onchange="window.location.href = updateQueryStringParameter('ordering', this.value)">
+                <option value="">Default</option>
+                <option value="due_date" {% if ordering == "due_date" %}selected{% endif %}>Due Date (earliest first)</option>
+                <option value="-due_date" {% if ordering == "-due_date" %}selected{% endif %}>Due Date (latest first)</option>
+                <option value="title" {% if ordering == "title" %}selected{% endif %}>Title (A-Z)</option>
+                <option value="-title" {% if ordering == "-title" %}selected{% endif %}>Title (Z-A)</option>
+            </select>
+        </div>
+
         <!-- Кнопка для создания задачи -->
         <a href="{% url 'task_create' project.id %}" class="btn btn-primary mb-3">Create Task</a>
 
         <!-- Список задач -->
         <ul class="list-group">
-            {% for task in tasks %}
+            {% for task in page_obj %}
             <li class="list-group-item">
                 <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a>
                 <span class="badge bg-secondary">{{ task.status }}</span>
+                <span class="text-muted ms-2">(Due Date: {{ task.due_date|date:"Y-m-d" }})</span>
             </li>
+            {% empty %}
+            <li class="list-group-item">No tasks found.</li>
             {% endfor %}
         </ul>
+
+        <!-- Пагинация -->
+        <div class="pagination mt-3">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-outline-secondary btn-sm">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-sm">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-sm">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-secondary btn-sm">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
     </div>
 </div>
+
+<!-- Скрипт для обновления параметров сортировки -->
+<script>
+    function updateQueryStringParameter(key, value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        return url.toString();
+    }
+</script>
 {% endblock %}

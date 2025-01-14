@@ -9,6 +9,7 @@ from django.contrib import messages
 from .forms import CommentForm
 from django.http import Http404, FileResponse
 from django.conf import settings
+from django.core.paginator import Paginator
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -28,20 +29,58 @@ def project_list(request):
     return render(request, 'projects/list.html', {'projects': projects})
 
 
+from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
+from .models import Project, Task
+
 @login_required
 def project_detail(request, pk):
+    # Получаем проект или возвращаем 404
     project = get_object_or_404(Project, id=pk)
+    
+    # Проверяем, что пользователь имеет доступ к проекту
     if project.user != request.user:
-        raise PermissionDenied(
-            "You don't have permission to view this project.")
+        raise PermissionDenied("You don't have permission to view this project.")
 
-    status = request.GET.get('status')  # Получаем параметр фильтрации
+    # Получаем все задачи проекта
     tasks = project.tasks.all()
+
+    # Поиск по названию задачи
+    search_query = request.GET.get('search')
+    if search_query:
+        tasks = tasks.filter(title__icontains=search_query)
+
+    # Фильтрация по статусу
+    status = request.GET.get('status')
     if status:
-        tasks = tasks.filter(status=status)  # Фильтруем задачи по статусу
+        tasks = tasks.filter(status=status)
 
-    return render(request, 'projects/detail.html', {'project': project, 'tasks': tasks})
+    # Фильтрация по due_date
+    due_date_before = request.GET.get('due_date_before')
+    if due_date_before:
+        tasks = tasks.filter(due_date__lte=due_date_before)
 
+    # Сортировка
+    ordering = request.GET.get('ordering')
+    if ordering:
+        tasks = tasks.order_by(ordering)
+
+    # Пагинация (10 задач на страницу)
+    paginator = Paginator(tasks, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Передаём данные в шаблон
+    return render(request, 'projects/detail.html', {
+        'project': project,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status': status,
+        'due_date_before': due_date_before,
+        'ordering': ordering,
+    })
 
 @login_required
 def task_detail(request, pk):
