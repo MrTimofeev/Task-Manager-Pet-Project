@@ -45,7 +45,7 @@ def project_detail(request, pk):
         raise PermissionDenied("You don't have permission to view this project.")
 
     # Получаем все задачи проекта
-    tasks = project.tasks.all()
+    tasks = project.tasks.all().order_by('due_date')  # Добавьте сортировку по умолчанию
 
     # Поиск по названию задачи
     search_query = request.GET.get('search')
