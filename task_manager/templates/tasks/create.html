@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Create Task</h1>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">  <!-- Добавляем enctype для загрузки файлов -->
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+            <div class="mb-3">
+                {{ form.status.label_tag }}
+                {{ form.status }}
+            </div>
+            <div class="mb-3">
+                {{ form.due_date.label_tag }}
+                <input type="date" 
+                       name="{{ form.due_date.name }}" 
+                       id="{{ form.due_date.id_for_label }}" 
+                       class="form-control" 
+                       min="{{ datetime.now|date:'Y-m-d' }}" 
+                       value="{{ form.due_date.value|default_if_none:'' }}">
+            </div>
+            <div class="mb-3">
+                {{ form.file.label_tag }}
+                {{ form.file }}
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dueDateField = document.querySelector('input[type="date"]');
+        if (dueDateField) {
+            const today = new Date().toISOString().split('T')[0];  // Получаем сегодняшнюю дату
+            dueDateField.setAttribute('min', today);  // Устанавливаем минимальную дату
+        }
+    });
+</script>
+{% endblock %}

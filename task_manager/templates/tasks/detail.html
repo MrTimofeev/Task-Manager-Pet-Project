@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>{{ task.title }}</h1>
+    </div>
+    <div class="card-body">
+        <p>{{ task.description }}</p>
+        <p><strong>Status:</strong> {{ task.status }}</p>
+        <p><strong>Due Date:</strong> {{ task.due_date|date:"Y-m-d" }}</p>
+        {% if task.file %}
+        <p><strong>File:</strong> <a href="{% url 'protected_file' task.file.name %}">Download</a></p>
+        {% endif %}
+        <div class="mt-3">
+            <a href="{% url 'project_detail' task.project.id %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Back to Project
+            </a>
+            <a href="{% url 'task_update' task.id %}" class="btn btn-secondary me-2">Edit</a>
+            <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+</div>
+
+<!-- Комментарии -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Comments</h3>
+    </div>
+    <div class="card-body">
+        <!-- Форма для добавления комментария -->
+        <form method="post" action="{% url 'add_comment' task.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <textarea name="text" class="form-control" placeholder="Add a comment"></textarea>
+            </div>
+            <div class="mb-3">
+                <input type="file" name="file" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </form>
+
+        <!-- Список комментариев -->
+        <ul class="list-group mt-3">
+            {% for comment in task.comments.all %}
+            <li class="list-group-item">
+                <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|date:"Y-m-d H:i" }}):
+                <p>{{ comment.text }}</p>
+                {% if comment.file %}
+                <p><strong>File:</strong> <a href="{% url 'protected_file' comment.file.name %}">Download</a></p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
