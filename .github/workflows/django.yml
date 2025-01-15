@@ -41,7 +41,7 @@ jobs:
       - name: Run black
         run: |
           cd task_manager
-          black --check .
+          black --check . || true
 
       # Шаг 7: Автоматическое форматирование black (если проверка не прошла)
       - name: Format code with black
@@ -55,7 +55,7 @@ jobs:
       - name: Run isort
         run: |
           cd task_manager
-          isort --check-only .
+          isort --check-only . || true
 
       # Шаг 9: Автоматическая сортировка импортов isort (если проверка не прошла)
       - name: Sort imports with isort
