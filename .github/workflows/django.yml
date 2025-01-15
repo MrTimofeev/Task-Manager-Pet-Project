@@ -17,13 +17,13 @@ jobs:
 
       # Шаг 3: Кэширование зависимостей
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
+            
       # Шаг 4: Установка зависимостей
       - name: Install dependencies
         run: |
