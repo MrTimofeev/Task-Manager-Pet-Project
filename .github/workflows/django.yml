@@ -18,9 +18,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Устанавливаем зависимости
 
+      - name: Debug project structure
+        run: ls -R  # Выводим структуру проекта
+
       - name: Change directory to task_manager
         run: cd task_manager  # Переходим в директорию task_manager
 
       - name: Run tests
         run: |
-          python manage.py test tasks  # Запускаем тесты
+          python manage.py test  # Запускаем тесты
