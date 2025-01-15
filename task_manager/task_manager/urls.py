@@ -15,23 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from tasks.views import ProjectViewSet, TaskViewSet
 from django.contrib.auth import views as auth_views
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
 from tasks import views
+from tasks.views import ProjectViewSet, TaskViewSet
 
 router = DefaultRouter()
-router.register(r'projects', ProjectViewSet)  # Регистрируем ViewSet для проектов
-router.register(r'tasks', TaskViewSet)        # Регистрируем ViewSet для задач
+router.register(r"projects", ProjectViewSet)  # Регистрируем ViewSet для проектов
+router.register(r"tasks", TaskViewSet)  # Регистрируем ViewSet для задач
 
 urlpatterns = [
-    path('admin/', admin.site.urls),          # Админка (если решишь использовать)
-    path('api/', include(router.urls)),       # Все API-маршруты
-    path('', include('tasks.urls')),         # Фронтенд
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('media/<path:file_path>', views.protected_file, name='protected_file'),
+    path("admin/", admin.site.urls),  # Админка (если решишь использовать)
+    path("api/", include(router.urls)),  # Все API-маршруты
+    path("", include("tasks.urls")),  # Фронтенд
+    path("accounts/login/", auth_views.LoginView.as_view(), name="login"),
+    path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("media/<path:file_path>", views.protected_file, name="protected_file"),
 ]
