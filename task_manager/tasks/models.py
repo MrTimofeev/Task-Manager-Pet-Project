@@ -9,6 +9,9 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('name', 'user')  # Уникальность имени проекта для каждого пользователя
+
     def __str__(self):
         return self.name
 
