@@ -21,9 +21,7 @@ jobs:
       - name: Debug project structure
         run: ls -R  # Выводим структуру проекта
 
-      - name: Change directory to task_manager
-        run: cd task_manager  # Переходим в директорию task_manager
-
       - name: Run tests
         run: |
+          cd task_manager  # Переходим в директорию task_manager
           python manage.py test  # Запускаем тесты
