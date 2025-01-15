@@ -24,12 +24,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = os.getenv("DEBUG", "False") == "True"
-DEBUG = "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
+# DEBUG = "True"
 
 ALLOWED_HOSTS = ["*"]  # Разрешает все хосты (для тестирования)
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://task-manager-pet-project-production.up.railway.app',
+] 
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
