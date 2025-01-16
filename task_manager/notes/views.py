@@ -1,14 +1,15 @@
+import markdown
 from django.urls import reverse_lazy
 from django.views.generic import (
-    ListView,
-    DetailView,
     CreateView,
-    UpdateView,
     DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
 )
-from .models import Note
-import markdown
+
 from .forms import NoteForm
+from .models import Note
 
 
 class NoteListView(ListView):

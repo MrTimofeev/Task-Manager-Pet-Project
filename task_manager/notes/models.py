@@ -1,8 +1,6 @@
 from django.db import models
-from tasks.models import (
-    Project,
-    Task,
-)  # Импортируй модели проектов и задач, если они есть
+
+from tasks.models import Project, Task
 
 
 class Tag(models.Model):
