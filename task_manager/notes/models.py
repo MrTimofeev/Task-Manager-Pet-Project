@@ -1,6 +1,7 @@
 from django.db import models
 from tasks.models import Project, Task  # Импортируй модели проектов и задач, если они есть
 
+
 class Tag(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
 
@@ -10,6 +11,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
+
 
 class Note(models.Model):
     title = models.CharField(max_length=255, verbose_name="Заголовок")
