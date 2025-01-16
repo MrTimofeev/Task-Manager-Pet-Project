@@ -31,19 +31,13 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      # Шаг 5: Запуск flake8
-      - name: Run flake8
-        run: |
-          cd task_manager
-          flake8 .
-
-      # Шаг 6: Запуск black (проверка форматирования)
+      # Шаг 5: Запуск black (проверка форматирования)
       - name: Run black
         run: |
           cd task_manager
           black --check . || true
 
-      # Шаг 7: Автоматическое форматирование black (если проверка не прошла)
+      # Шаг 6: Автоматическое форматирование black (если проверка не прошла)
       - name: Format code with black
         if: failure() && steps.black.outcome == 'failure'
         run: |
@@ -51,19 +45,25 @@ jobs:
           black .
           echo "Code formatted with black. Please commit the changes."
 
-      # Шаг 8: Запуск isort (проверка сортировки импортов)
+      # Шаг 7: Запуск isort (проверка сортировки импортов)
       - name: Run isort
         run: |
           cd task_manager
           isort --check-only . || true
 
-      # Шаг 9: Автоматическая сортировка импортов isort (если проверка не прошла)
+      # Шаг 8: Автоматическая сортировка импортов isort (если проверка не прошла)
       - name: Sort imports with isort
         if: failure() && steps.isort.outcome == 'failure'
         run: |
           cd task_manager
           isort .
           echo "Imports sorted with isort. Please commit the changes."
+
+      # Шаг 9: Запуск flake8
+      - name: Run flake8
+        run: |
+          cd task_manager
+          flake8 .
 
       # Шаг 10: Запуск тестов
       - name: Run tests
