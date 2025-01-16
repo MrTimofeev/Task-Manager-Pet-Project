@@ -1,5 +1,8 @@
 from django.db import models
-from tasks.models import Project, Task  # Импортируй модели проектов и задач, если они есть
+from tasks.models import (
+    Project,
+    Task,
+)  # Импортируй модели проектов и задач, если они есть
 
 
 class Tag(models.Model):
@@ -18,9 +21,15 @@ class Note(models.Model):
     content = models.TextField(verbose_name="Содержание", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    projects = models.ManyToManyField(Project, related_name='notes', blank=True, verbose_name="Проекты")
-    tasks = models.ManyToManyField(Task, related_name='notes', blank=True, verbose_name="Задачи")
-    tags = models.ManyToManyField('Tag', related_name='notes', blank=True, verbose_name="Теги")
+    projects = models.ManyToManyField(
+        Project, related_name="notes", blank=True, verbose_name="Проекты"
+    )
+    tasks = models.ManyToManyField(
+        Task, related_name="notes", blank=True, verbose_name="Задачи"
+    )
+    tags = models.ManyToManyField(
+        "Tag", related_name="notes", blank=True, verbose_name="Теги"
+    )
 
     def __str__(self):
         return self.title
