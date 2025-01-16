@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,8 +30,8 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = ["*"]  # Разрешает все хосты (для тестирования)
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://task-manager-pet-project-production.up.railway.app',
-] 
+    "https://task-manager-pet-project-production.up.railway.app",
+]
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
@@ -134,11 +134,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",  # Разрешить доступ всем (пока для разработки)
+        # Разрешить доступ всем (пока для разработки)
+        "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",  # Для аутентификации через сессии
-        "rest_framework.authentication.TokenAuthentication",  # Для аутентификации через токены
+        # Для аутентификации через сессии
+        "rest_framework.authentication.SessionAuthentication",
+        # Для аутентификации через токены
+        "rest_framework.authentication.TokenAuthentication",
     ],
 }
 
