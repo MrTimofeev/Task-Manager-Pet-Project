@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="my-4">
+        {% if form.instance.pk %}Редактировать заметку{% else %}Создать заметку{% endif %}
+    </h1>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <!-- Поле "Заголовок" -->
+        <div class="mb-3">
+            <label for="id_title" class="form-label">Заголовок</label>
+            <input type="text" class="form-control" id="id_title" name="title" value="{{ form.title.value|default:'' }}" placeholder="Введите заголовок" required>
+            <div class="invalid-feedback">
+                Пожалуйста, введите заголовок.
+            </div>
+        </div>
+
+        <!-- Поле "Содержание" -->
+        <div class="mb-3">
+            <label for="id_content" class="form-label">Содержание</label>
+            <textarea class="form-control" id="id_content" name="content" rows="6" placeholder="Введите текст заметки" required>{{ form.content.value|default:'' }}</textarea>
+            <div class="invalid-feedback">
+                Пожалуйста, введите содержание заметки.
+            </div>
+        </div>
+
+        <!-- Поле "Проекты" -->
+        <div class="mb-3">
+            <label for="id_projects" class="form-label">Проекты</label>
+            <select class="form-select" id="id_projects" name="projects" multiple>
+                {% for project in form.projects.field.queryset %}
+                    <option value="{{ project.pk }}" {% if project in form.projects.value %}selected{% endif %}>{{ project.name }}</option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">Выберите проекты (удерживайте Ctrl для выбора нескольких).</small>
+        </div>
+
+        <!-- Поле "Задачи" -->
+        <div class="mb-3">
+            <label for="id_tasks" class="form-label">Задачи</label>
+            <select class="form-select" id="id_tasks" name="tasks" multiple>
+                {% for task in form.tasks.field.queryset %}
+                    <option value="{{ task.pk }}" {% if task in form.tasks.value %}selected{% endif %}>{{ task.title }}</option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">Выберите задачи (удерживайте Ctrl для выбора нескольких).</small>
+        </div>
+
+        <!-- Поле "Теги" -->
+        <div class="mb-3">
+            <label for="id_tags" class="form-label">Теги</label>
+            <select class="form-select" id="id_tags" name="tags" multiple>
+                {% for tag in form.tags.field.queryset %}
+                    <option value="{{ tag.pk }}" {% if tag in form.tags.value %}selected{% endif %}>{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">Выберите теги (удерживайте Ctrl для выбора нескольких).</small>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="d-grid gap-2 d-md-block">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Сохранить
+            </button>
+            <a href="{% url 'notes:note_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Скрипт для валидации формы -->
+<script>
+    (function () {
+        'use strict'
+
+        // Получаем форму
+        var form = document.querySelector('.needs-validation')
+
+        // Добавляем валидацию
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })()
+</script>
+{% endblock %}

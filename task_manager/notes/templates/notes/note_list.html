@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Заметки</h1>
+    <a href="{% url 'notes:note_create' %}" class="btn btn-primary mb-3">
+        <i class="bi bi-plus-circle"></i> Создать новую заметку
+    </a>
+    <div class="row">
+        {% for note in notes %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ note.title }}</h5>
+                    <p class="card-text">{{ note.content|truncatewords:20 }}</p>
+                    <a href="{% url 'notes:note_detail' note.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> Подробнее
+                    </a>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Создано: {{ note.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                Заметок пока нет. <a href="{% url 'notes:note_create' %}" class="alert-link">Создайте первую!</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
