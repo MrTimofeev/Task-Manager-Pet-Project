@@ -35,3 +35,16 @@ class Note(models.Model):
     class Meta:
         verbose_name = "Заметка"
         verbose_name_plural = "Заметки"
+
+
+class NoteLink(models.Model):
+    from_note = models.ForeignKey(Note, related_name='outgoing_links', on_delete=models.CASCADE)
+    to_note = models.ForeignKey(Note, related_name='incoming_links', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_note.title} -> {self.to_note.title}"
+
+    class Meta:
+        verbose_name = "Связь между заметками"
+        verbose_name_plural = "Связи между заметками"

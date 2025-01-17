@@ -7,9 +7,11 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-
+from django.http import JsonResponse
+from .models import Note, NoteLink
 from .forms import NoteForm
-from .models import Note
+from django.shortcuts import render
+from .forms import NoteLinkForm
 
 
 class NoteListView(ListView):
@@ -48,3 +50,29 @@ class NoteDeleteView(DeleteView):
     model = Note
     template_name = "notes/note_confirm_delete.html"
     success_url = reverse_lazy("notes:note_list")
+
+
+def note_graph_data(request):
+    # Получаем все заметки
+    notes = Note.objects.all()
+    # Получаем все связи между заметками
+    links = NoteLink.objects.all()
+
+    # Формируем узлы (nodes)
+    nodes = [{"id": note.id, "label": note.title} for note in notes]
+
+    # Формируем связи (edges)
+    edges = [{"from": link.from_note.id, "to": link.to_note.id} for link in links]
+
+    # Возвращаем данные в формате JSON
+    return JsonResponse({"nodes": nodes, "edges": edges})
+
+
+def note_graph(request):
+    return render(request, 'notes/note_graph.html')
+
+class NoteLinkCreateView(CreateView):
+    model = NoteLink
+    form_class = NoteLinkForm
+    template_name = 'notes/notelink_form.html'
+    success_url = reverse_lazy('notes:note_graph')  # Перенаправляем на страницу с графом после создания связи

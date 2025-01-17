@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Создать связь между заметками</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_from_note" class="form-label">Из заметки</label>
+            {{ form.from_note }}
+        </div>
+        <div class="mb-3">
+            <label for="id_to_note" class="form-label">В заметку</label>
+            {{ form.to_note }}
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Сохранить
+        </button>
+        <a href="{% url 'notes:note_graph' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к графу
+        </a>
+    </form>
+</div>
+{% endblock %}
