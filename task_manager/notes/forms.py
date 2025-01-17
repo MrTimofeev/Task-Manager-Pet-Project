@@ -24,8 +24,8 @@ class NoteForm(forms.ModelForm):
 class NoteLinkForm(forms.ModelForm):
     class Meta:
         model = NoteLink
-        fields = ['from_note', 'to_note']
+        fields = ["from_note", "to_note"]
         widgets = {
-            'from_note': forms.Select(attrs={'class': 'form-select'}),
-            'to_note': forms.Select(attrs={'class': 'form-select'}),
+            "from_note": forms.Select(attrs={"class": "form-select"}),
+            "to_note": forms.Select(attrs={"class": "form-select"}),
         }

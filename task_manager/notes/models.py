@@ -38,8 +38,12 @@ class Note(models.Model):
 
 
 class NoteLink(models.Model):
-    from_note = models.ForeignKey(Note, related_name='outgoing_links', on_delete=models.CASCADE)
-    to_note = models.ForeignKey(Note, related_name='incoming_links', on_delete=models.CASCADE)
+    from_note = models.ForeignKey(
+        Note, related_name="outgoing_links", on_delete=models.CASCADE
+    )
+    to_note = models.ForeignKey(
+        Note, related_name="incoming_links", on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

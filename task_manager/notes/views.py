@@ -1,4 +1,6 @@
 import markdown
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -7,11 +9,9 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from django.http import JsonResponse
+
+from .forms import NoteForm, NoteLinkForm
 from .models import Note, NoteLink
-from .forms import NoteForm
-from django.shortcuts import render
-from .forms import NoteLinkForm
 
 
 class NoteListView(ListView):
@@ -69,10 +69,13 @@ def note_graph_data(request):
 
 
 def note_graph(request):
-    return render(request, 'notes/note_graph.html')
+    return render(request, "notes/note_graph.html")
+
 
 class NoteLinkCreateView(CreateView):
     model = NoteLink
     form_class = NoteLinkForm
-    template_name = 'notes/notelink_form.html'
-    success_url = reverse_lazy('notes:note_graph')  # Перенаправляем на страницу с графом после создания связи
+    template_name = "notes/notelink_form.html"
+    success_url = reverse_lazy(
+        "notes:note_graph"
+    )  # Перенаправляем на страницу с графом после создания связи
