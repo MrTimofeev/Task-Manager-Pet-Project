@@ -36,14 +36,27 @@
         100% { transform: rotate(360deg); }
     }
 
-    /* Активные ссылки в навигации */
-    .nav-link.active {
-        font-weight: bold;
-        border-bottom: 2px solid #0d6efd;
+    /* Темная тема */
+    .dark-theme {
+        background-color: #121212;
+        color: #ffffff;
+    }
+    .dark-theme .card {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+    .dark-theme .btn {
+        background-color: #333;
+        color: #fff;
     }
 </style>
 
 <div class="container mt-4">
+    <!-- Кнопка переключения темы -->
+    <button class="btn btn-secondary mb-3" onclick="toggleTheme()">
+        <i class="bi bi-moon"></i> Темная тема
+    </button>
+
     <!-- Карточка задачи -->
     <div class="card card-hover">
         <div class="card-header">
@@ -96,6 +109,52 @@
         </div>
     </div>
 
+    <!-- Drag-and-Drop для изменения статуса задачи -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    To Do
+                </div>
+                <div class="card-body" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    {% for task in tasks_todo %}
+                    <div class="task-item" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        {{ task.title }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    In Progress
+                </div>
+                <div class="card-body" id="in_progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    {% for task in tasks_in_progress %}
+                    <div class="task-item" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        {{ task.title }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    Done
+                </div>
+                <div class="card-body" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    {% for task in tasks_done %}
+                    <div class="task-item" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        {{ task.title }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Карточка для комментариев -->
     <div class="card mt-4 card-hover">
         <div class="card-header">
@@ -133,13 +192,56 @@
     </div>
 </div>
 
-<!-- Скрипт для индикатора загрузки -->
+<!-- Скрипты -->
 <script>
+    // Индикатор загрузки
     function showLoading() {
         document.getElementById('loadingSpinner').style.display = 'inline-block';
         document.getElementById('submitText').style.display = 'none';
         document.getElementById('commentLoadingSpinner').style.display = 'inline-block';
         document.getElementById('commentSubmitText').style.display = 'none';
     }
+
+    // Drag-and-Drop
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.id);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData("text");
+        const newStatus = event.target.id;
+        fetch(`/tasks/${taskId}/update_status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+
+    // Темная тема
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
+    // При загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    });
 </script>
 {% endblock %}
