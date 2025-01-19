@@ -1,57 +1,145 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h1>{{ task.title }}</h1>
+<!-- Кастомные стили -->
+<style>
+    /* Hover-эффекты для карточек */
+    .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Анимации для кнопок */
+    .btn-hover {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .btn-hover:hover {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    /* Индикатор загрузки */
+    .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Активные ссылки в навигации */
+    .nav-link.active {
+        font-weight: bold;
+        border-bottom: 2px solid #0d6efd;
+    }
+</style>
+
+<div class="container mt-4">
+    <!-- Карточка задачи -->
+    <div class="card card-hover">
+        <div class="card-header">
+            <h1>{{ task.title }}</h1>
+        </div>
+        <div class="card-body">
+            <p>{{ task.description }}</p>
+            <p><strong>Статус:</strong> {{ task.status }}</p>
+            <p><strong>Дедлайн:</strong> {{ task.due_date|date:"Y-m-d" }}</p>
+            {% if task.file %}
+            <p><strong>Файл:</strong> <a href="{% url 'protected_file' task.file.name %}">Скачать</a></p>
+            {% endif %}
+            <div class="mt-3">
+                <a href="{% url 'project_detail' task.project.id %}" class="btn btn-outline-secondary btn-hover me-2">
+                    <i class="bi bi-arrow-left"></i> Назад к проекту
+                </a>
+                <a href="{% url 'task_update' task.id %}" class="btn btn-secondary btn-hover me-2">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+                <!-- Кнопка удаления с модальным окном -->
+                <button type="button" class="btn btn-danger btn-hover" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p>{{ task.description }}</p>
-        <p><strong>Status:</strong> {{ task.status }}</p>
-        <p><strong>Due Date:</strong> {{ task.due_date|date:"Y-m-d" }}</p>
-        {% if task.file %}
-        <p><strong>File:</strong> <a href="{% url 'protected_file' task.file.name %}">Download</a></p>
-        {% endif %}
-        <div class="mt-3">
-            <a href="{% url 'project_detail' task.project.id %}" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-arrow-left"></i> Back to Project
-            </a>
-            <a href="{% url 'task_update' task.id %}" class="btn btn-secondary me-2">Edit</a>
-            <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Delete</a>
+
+    <!-- Модальное окно для удаления задачи -->
+    <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteTaskModalLabel">Удалить задачу</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить задачу "{{ task.title }}"?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <form method="post" action="{% url 'task_delete' task.id %}" onsubmit="showLoading()">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <span class="loading-spinner" id="loadingSpinner"></span>
+                            <span id="submitText">Удалить</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Карточка для комментариев -->
+    <div class="card mt-4 card-hover">
+        <div class="card-header">
+            <h3>Комментарии</h3>
+        </div>
+        <div class="card-body">
+            <!-- Форма для добавления комментария -->
+            <form method="post" action="{% url 'add_comment' task.id %}" enctype="multipart/form-data" onsubmit="showLoading()">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea name="text" class="form-control" placeholder="Добавить комментарий" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <input type="file" name="file" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="loading-spinner" id="commentLoadingSpinner"></span>
+                    <span id="commentSubmitText">Добавить комментарий</span>
+                </button>
+            </form>
+
+            <!-- Список комментариев -->
+            <ul class="list-group mt-3">
+                {% for comment in task.comments.all %}
+                <li class="list-group-item">
+                    <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|date:"Y-m-d H:i" }}):
+                    <p>{{ comment.text }}</p>
+                    {% if comment.file %}
+                    <p><strong>Файл:</strong> <a href="{% url 'protected_file' comment.file.name %}">Скачать</a></p>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>
 
-<!-- Комментарии -->
-<div class="card mt-4">
-    <div class="card-header">
-        <h3>Comments</h3>
-    </div>
-    <div class="card-body">
-        <!-- Форма для добавления комментария -->
-        <form method="post" action="{% url 'add_comment' task.id %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="mb-3">
-                <textarea name="text" class="form-control" placeholder="Add a comment"></textarea>
-            </div>
-            <div class="mb-3">
-                <input type="file" name="file" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">Add Comment</button>
-        </form>
-
-        <!-- Список комментариев -->
-        <ul class="list-group mt-3">
-            {% for comment in task.comments.all %}
-            <li class="list-group-item">
-                <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|date:"Y-m-d H:i" }}):
-                <p>{{ comment.text }}</p>
-                {% if comment.file %}
-                <p><strong>File:</strong> <a href="{% url 'protected_file' comment.file.name %}">Download</a></p>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+<!-- Скрипт для индикатора загрузки -->
+<script>
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'inline-block';
+        document.getElementById('submitText').style.display = 'none';
+        document.getElementById('commentLoadingSpinner').style.display = 'inline-block';
+        document.getElementById('commentSubmitText').style.display = 'none';
+    }
+</script>
 {% endblock %}
