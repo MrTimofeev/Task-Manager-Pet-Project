@@ -24,8 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
-# DEBUG = "True"
+# DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = "True"
 
 ALLOWED_HOSTS = ["*"]  # Разрешает все хосты (для тестирования)
 
@@ -151,3 +151,11 @@ LOGOUT_REDIRECT_URL = "login"  # Перенаправление на стран�
 
 MEDIA_URL = "/media/"  # URL для доступа к медиа-файлам
 MEDIA_ROOT = BASE_DIR / "media"  # Папка для хранения медиа-файлов
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # SMTP-сервер Gmail
+EMAIL_PORT = 587  # Порт для TLS
+EMAIL_USE_TLS = True  # Использовать TLS для безопасного соединения
+EMAIL_HOST_USER = ""  # Твой email
+EMAIL_HOST_PASSWORD = ""  # Пароль от email

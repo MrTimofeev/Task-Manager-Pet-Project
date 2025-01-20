@@ -1,9 +1,12 @@
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import viewsets
 
@@ -91,9 +94,7 @@ def task_detail(request, pk):
     return render(request, "tasks/detail.html", {"task": task})
 
 
-login_required
-
-
+@login_required
 def project_create(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
@@ -154,6 +155,7 @@ def task_update(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Task updated successfully.")
+
             # Перенаправляем на страницу проекта
             return redirect("project_detail", pk=task.project.id)
     else:
@@ -207,3 +209,60 @@ def protected_file(request, file_path):
             raise PermissionDenied("You don't have permission to access this file.")
 
     return FileResponse(open(full_path, "rb"))
+
+
+def send_task_status_notification(task, user):
+    subject = "Статус задачи изменен"
+    message = f"""
+    Здравствуйте, {user.username}!
+
+    Статус задачи "{task.title}" был изменен на "{task.get_status_display()}".
+
+    С уважением,
+    Ваш Task Manager
+    """
+    send_mail(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER,  # Отправитель
+        [user.email],  # Получатель
+        fail_silently=False,  # Не молчать об ошибках
+    )
+
+
+def update_task_status(request, task_id):
+    if request.method == "POST":
+        try:
+            # Получаем данные из тела запроса
+            data = json.loads(request.body)
+            new_status = data.get("status")
+
+            task = Task.objects.get(id=task_id)
+            if new_status in [
+                "todo",
+                "in_progress",
+                "done",
+            ]:  # Проверка допустимых значений
+                task.status = new_status
+                task.save()
+
+                # Отправка уведомления
+                send_task_status_notification(task, request.user)
+
+                return JsonResponse({"status": "success"})
+            else:
+                return JsonResponse(
+                    {"status": "error", "message": "Invalid status"}, status=400
+                )
+        except Task.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "Task not found"}, status=404
+            )
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"status": "error", "message": "Invalid JSON"}, status=400
+            )
+    else:
+        return JsonResponse(
+            {"status": "error", "message": "Invalid request method"}, status=405
+        )

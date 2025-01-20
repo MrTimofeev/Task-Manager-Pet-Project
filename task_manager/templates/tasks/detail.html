@@ -7,6 +7,7 @@
     .card-hover {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .card-hover:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -16,6 +17,7 @@
     .btn-hover {
         transition: background-color 0.3s ease, color 0.3s ease;
     }
+
     .btn-hover:hover {
         background-color: #0d6efd;
         color: white;
@@ -31,9 +33,15 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Темная тема */
@@ -41,10 +49,12 @@
         background-color: #121212;
         color: #ffffff;
     }
+
     .dark-theme .card {
         background-color: #1e1e1e;
         color: #ffffff;
     }
+
     .dark-theme .btn {
         background-color: #333;
         color: #fff;
@@ -64,7 +74,13 @@
         </div>
         <div class="card-body">
             <p>{{ task.description }}</p>
-            <p><strong>Статус:</strong> {{ task.status }}</p>
+            <p><strong>Статус:</strong>
+                <select onchange="updateTaskStatus({{ task.id }}, this.value)">
+                    <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+                </select>
+            </p>
             <p><strong>Дедлайн:</strong> {{ task.due_date|date:"Y-m-d" }}</p>
             {% if task.file %}
             <p><strong>Файл:</strong> <a href="{% url 'protected_file' task.file.name %}">Скачать</a></p>
@@ -77,7 +93,8 @@
                     <i class="bi bi-pencil"></i> Редактировать
                 </a>
                 <!-- Кнопка удаления с модальным окном -->
-                <button type="button" class="btn btn-danger btn-hover" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
+                <button type="button" class="btn btn-danger btn-hover" data-bs-toggle="modal"
+                    data-bs-target="#deleteTaskModal">
                     <i class="bi bi-trash"></i> Удалить
                 </button>
             </div>
@@ -85,7 +102,8 @@
     </div>
 
     <!-- Модальное окно для удаления задачи -->
-    <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -162,7 +180,8 @@
         </div>
         <div class="card-body">
             <!-- Форма для добавления комментария -->
-            <form method="post" action="{% url 'add_comment' task.id %}" enctype="multipart/form-data" onsubmit="showLoading()">
+            <form method="post" action="{% url 'add_comment' task.id %}" enctype="multipart/form-data"
+                onsubmit="showLoading()">
                 {% csrf_token %}
                 <div class="mb-3">
                     <textarea name="text" class="form-control" placeholder="Добавить комментарий" required></textarea>
@@ -243,5 +262,23 @@
             document.body.classList.add('dark-theme');
         }
     });
+    function updateTaskStatus(taskId, newStatus) {
+        fetch(`/tasks/${taskId}/update_status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Ошибка при обновлении статуса');
+            }
+        }).catch(error => {
+            alert('Ошибка сети');
+        });
+    }
 </script>
 {% endblock %}
