@@ -42,7 +42,7 @@ def project_detail(request, pk):
         raise PermissionDenied("You don't have permission to view this project.")
 
     # Получаем все задачи проекта
-    tasks = project.tasks.all().order_by("due_date")  # Добавьте сортировку по умолчанию
+    tasks = project.tasks.all().order_by("due_date")
 
     # Поиск по названию задачи
     search_query = request.GET.get("search")
@@ -231,38 +231,29 @@ def send_task_status_notification(task, user):
 
 
 def update_task_status(request, task_id):
-    if request.method == "POST":
-        try:
-            # Получаем данные из тела запроса
-            data = json.loads(request.body)
-            new_status = data.get("status")
+    ALLOWED_STATUSES = {"todo", "in_progress", "done"}
+    try:
+        # Получаем данные из тела запроса
+        data = json.loads(request.body)
+        new_status = data.get("status")
 
-            task = Task.objects.get(id=task_id)
-            if new_status in [
-                "todo",
-                "in_progress",
-                "done",
-            ]:  # Проверка допустимых значений
-                task.status = new_status
-                task.save()
-
-                # Отправка уведомления
-                send_task_status_notification(task, request.user)
-
-                return JsonResponse({"status": "success"})
-            else:
-                return JsonResponse(
-                    {"status": "error", "message": "Invalid status"}, status=400
-                )
-        except Task.DoesNotExist:
+        if new_status not in ALLOWED_STATUSES:
             return JsonResponse(
-                {"status": "error", "message": "Task not found"}, status=404
+                {"status": "error", "message": "Invalid status"}, status=400
             )
-        except json.JSONDecodeError:
-            return JsonResponse(
-                {"status": "error", "message": "Invalid JSON"}, status=400
-            )
-    else:
+
+        task = Task.objects.get(id=task_id)
+        task.status = new_status
+        task.save()
+
+        # Отправка уведомления
+        send_task_status_notification(task, request.user)
+
+        return JsonResponse({"status": "success"})
+
+    except Task.DoesNotExist:
         return JsonResponse(
-            {"status": "error", "message": "Invalid request method"}, status=405
+            {"status": "error", "message": "Task not found"}, status=404
         )
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
